@@ -31,74 +31,76 @@ import java.io.IOException;
 public class DingTalkNotifier extends Notifier implements SimpleBuildStep {
 
     private String accessToken;
-    private String notifyPeople;
     private String message;
     private String imageUrl;
-    private String jenkinsUrl;
+    private String messageUrl;
 
     @DataBoundConstructor
-    public DingTalkNotifier(String accessToken, String notifyPeople, String message, String imageUrl, String jenkinsUrl) {
+    public DingTalkNotifier(String accessToken, String message, String imageUrl, String messageUrl) {
         this.accessToken = accessToken;
-        this.notifyPeople = notifyPeople;
         this.message = message;
         this.imageUrl = imageUrl;
-        this.jenkinsUrl = jenkinsUrl;
+        this.messageUrl = messageUrl;
     }
 
     public String getAccessToken() {
         return accessToken;
     }
-
-    @DataBoundSetter
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    public String getNotifyPeople() {
-        return notifyPeople;
-    }
-
-    @DataBoundSetter
-    public void setNotifyPeople(String notifyPeople) {
-        this.notifyPeople = notifyPeople;
-    }
-
     public String getMessage() {
         return message;
     }
-
-    @DataBoundSetter
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public String getImageUrl() {
         return imageUrl;
     }
-
-    @DataBoundSetter
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public String getMessageUrl() {
+        return messageUrl;
     }
+    // @DataBoundSetter
+    // public void setAccessToken(String accessToken) {
+    //     this.accessToken = accessToken;
+    // }
 
-    public String getJenkinsUrl() {
-        return jenkinsUrl;
-    }
+    // public String getNotifyPeople() {
+    //     return notifyPeople;
+    // }
 
-    @DataBoundSetter
-    public void setJenkinsUrl(String jenkinsUrl) {
-        this.jenkinsUrl = jenkinsUrl;
-    }
+    // @DataBoundSetter
+    // public void setNotifyPeople(String notifyPeople) {
+    //     this.notifyPeople = notifyPeople;
+    // }
+
+    
+
+    // @DataBoundSetter
+    // public void setMessage(String message) {
+    //     this.message = message;
+    // }
+
+   
+
+    // @DataBoundSetter
+    // public void setImageUrl(String imageUrl) {
+    //     this.imageUrl = imageUrl;
+    // }
+
+    // public String getJenkinsUrl() {
+    //     return jenkinsUrl;
+    // }
+
+    // @DataBoundSetter
+    // public void setJenkinsUrl(String jenkinsUrl) {
+    //     this.jenkinsUrl = jenkinsUrl;
+    // }
 
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
         String buildInfo = run.getFullDisplayName();
         if (!StringUtils.isBlank(message)) {
             sendMessage(LinkMessage.builder()
-                    .title(buildInfo + message)
+                    .title(buildInfo)
                     .picUrl(imageUrl)
                     .text(message)
-                    .messageUrl((jenkinsUrl.endsWith("/") ? jenkinsUrl : jenkinsUrl + "/") + run.getUrl())
+                    .messageUrl(messageUrl)
                     .build());
         }
     }
@@ -121,12 +123,12 @@ public class DingTalkNotifier extends Notifier implements SimpleBuildStep {
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
-        public FormValidation doCheck(@QueryParameter String accessToken, @QueryParameter String notifyPeople) {
-            if (StringUtils.isBlank(accessToken)) {
-                return FormValidation.error(Messages.DingTalkNotifier_DescriptorImpl_AccessTokenIsNecessary());
-            }
-            return FormValidation.ok();
-        }
+        // public FormValidation doCheck(@QueryParameter String accessToken, @QueryParameter String notifyPeople) {
+        //     if (StringUtils.isBlank(accessToken)) {
+        //         return FormValidation.error(Messages.DingTalkNotifier_DescriptorImpl_AccessTokenIsNecessary());
+        //     }
+        //     return FormValidation.ok();
+        // }
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
