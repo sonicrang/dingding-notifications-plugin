@@ -21,9 +21,17 @@ import org.kohsuke.stapler.QueryParameter;
 import ren.wizard.dingtalkclient.DingTalkClient;
 import ren.wizard.dingtalkclient.message.DingMessage;
 import ren.wizard.dingtalkclient.message.LinkMessage;
+import ren.wizard.dingtalkclient.message.Message;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 /**
  * @author uyangjie
@@ -31,88 +39,61 @@ import java.io.IOException;
 public class DingTalkNotifier extends Notifier implements SimpleBuildStep {
 
     private String accessToken;
-    private String message;
-    private String imageUrl;
-    private String messageUrl;
+    private String text;
+    private String atMobiles;
 
     @DataBoundConstructor
-    public DingTalkNotifier(String accessToken, String message, String imageUrl, String messageUrl) {
+    public DingTalkNotifier(String accessToken, String text, String atMobiles) {
         this.accessToken = accessToken;
-        this.message = message;
-        this.imageUrl = imageUrl;
-        this.messageUrl = messageUrl;
+        this.text = text;
+        this.atMobiles = atMobiles;
     }
 
     public String getAccessToken() {
         return accessToken;
     }
-    public String getMessage() {
-        return message;
+    public String getText() {
+        return text;
     }
-    public String getImageUrl() {
-        return imageUrl;
+    public String getAtMobiles() {
+        return atMobiles;
     }
-    public String getMessageUrl() {
-        return messageUrl;
-    }
-    // @DataBoundSetter
-    // public void setAccessToken(String accessToken) {
-    //     this.accessToken = accessToken;
-    // }
-
-    // public String getNotifyPeople() {
-    //     return notifyPeople;
-    // }
-
-    // @DataBoundSetter
-    // public void setNotifyPeople(String notifyPeople) {
-    //     this.notifyPeople = notifyPeople;
-    // }
-
     
-
-    // @DataBoundSetter
-    // public void setMessage(String message) {
-    //     this.message = message;
-    // }
-
-   
-
-    // @DataBoundSetter
-    // public void setImageUrl(String imageUrl) {
-    //     this.imageUrl = imageUrl;
-    // }
-
-    // public String getJenkinsUrl() {
-    //     return jenkinsUrl;
-    // }
-
-    // @DataBoundSetter
-    // public void setJenkinsUrl(String jenkinsUrl) {
-    //     this.jenkinsUrl = jenkinsUrl;
-    // }
-
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
         String buildInfo = run.getFullDisplayName();
-        if (!StringUtils.isBlank(message)) {
-            sendMessage(LinkMessage.builder()
-                    .title(buildInfo)
-                    .picUrl(imageUrl)
-                    .text(message)
-                    .messageUrl(messageUrl)
-                    .build());
+
+        String WEBHOOK_TOKEN = "https://oapi.dingtalk.com/robot/send?access_token="+accessToken;
+    
+        HttpClient httpclient = HttpClients.createDefault();
+    
+        HttpPost httppost = new HttpPost(WEBHOOK_TOKEN);
+        httppost.addHeader("Content-Type", "application/json; charset=utf-8");
+
+        // String[] mobiles = atMobiles.split("\\|");
+        // String atMobilesStr = "";
+
+        // if (mobiles.length > 1){
+        //     for (int i = 0 ; i <mobiles.length - 1 ; i++ ) {
+        //         atMobilesStr = atMobilesStr + mobiles[i] + ","; 
+        //     } 
+        //     atMobilesStr = atMobilesStr + mobiles[mobiles.length - 1]
+        // } else {
+            
+        // }
+        
+        String textMsg = "{ \"msgtype\": \"markdown\", \"markdown\": {\"title\": \""+buildInfo+"\", \"text\": \""+text+"\" }, \"at\": {\"atMobiles\": [\""+ atMobiles +"\"],\"isAtAll\": false }}";
+
+        StringEntity se = new StringEntity(textMsg, "utf-8");
+        httppost.setEntity(se);
+    
+        HttpResponse response = httpclient.execute(httppost);
+        if (response.getStatusLine().getStatusCode()== HttpStatus.SC_OK){
+            String result= EntityUtils.toString(response.getEntity(), "utf-8");
+            System.out.println(result);
         }
     }
 
-    private void sendMessage(DingMessage message) {
-        DingTalkClient dingTalkClient = DingTalkClient.getInstance();
-        try {
-            dingTalkClient.sendMessage(accessToken, message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
