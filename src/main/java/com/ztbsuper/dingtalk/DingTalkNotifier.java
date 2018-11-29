@@ -21,10 +21,10 @@ import org.kohsuke.stapler.QueryParameter;
 import ren.wizard.dingtalkclient.DingTalkClient;
 import ren.wizard.dingtalkclient.message.DingMessage;
 import ren.wizard.dingtalkclient.message.LinkMessage;
-import ren.wizard.dingtalkclient.message.Message;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -69,18 +69,6 @@ public class DingTalkNotifier extends Notifier implements SimpleBuildStep {
     
         HttpPost httppost = new HttpPost(WEBHOOK_TOKEN);
         httppost.addHeader("Content-Type", "application/json; charset=utf-8");
-
-        // String[] mobiles = atMobiles.split("\\|");
-        // String atMobilesStr = "";
-
-        // if (mobiles.length > 1){
-        //     for (int i = 0 ; i <mobiles.length - 1 ; i++ ) {
-        //         atMobilesStr = atMobilesStr + mobiles[i] + ","; 
-        //     } 
-        //     atMobilesStr = atMobilesStr + mobiles[mobiles.length - 1]
-        // } else {
-            
-        // }
         
         String textMsg = "{ \"msgtype\": \"markdown\", \"markdown\": {\"title\": \""+buildInfo+"\", \"text\": \""+text+"\" }, \"at\": {\"atMobiles\": [\""+ atMobiles +"\"],\"isAtAll\": false }}";
 
